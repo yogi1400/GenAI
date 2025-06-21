@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Productivity Agent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>GenAI Productivity Agent</h1>
+        <div class="productivity-section">
+            <div class="tasks">
+                <h2>Tasks</h2>
+                <form id="taskForm">
+                    <input type="text" id="taskInput" placeholder="Add a new task..." required />
+                    <button type="submit">Add</button>
+                </form>
+                <ul id="taskList"></ul>
+            </div>
+            <div class="notes">
+                <h2>Quick Notes</h2>
+                <textarea id="notesArea" placeholder="Write your notes here..."></textarea>
+                <button id="saveNotes">Save Notes</button>
+            </div>
+        </div>
+        <div class="ai-section">
+            <h2>AI Productivity Chat</h2>
+            <div class="chat-box" id="chatBox"></div>
+            <form id="chatForm">
+                <label for="modelSelector" style="margin-right:8px;font-weight:500;">Model:</label>
+                <select id="modelSelector">
+                  <option value="zephyr">Zephyr-7B</option>
+                  <option value="deepseek">DeepSeek-R1</option>
+                </select>
+                <input type="text" id="userInput" placeholder="Ask for productivity tips..." autocomplete="off" required />
+                <button type="submit">Send</button>
+            </form>
+        </div>
+        <button id="toggleTheme">Toggle Dark Mode</button>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
