@@ -43,10 +43,10 @@ vectorstore = Chroma(embedding_function=embeddings)
 retriever = vectorstore.as_retriever()
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from deepseek_client import deepseek_chat
+from deepseek_client import qwen_chat
 
 @app.post("/api/agent/chat")
-async def agent_chat(req: ChatRequest, model: str = Query("zephyr", enum=["zephyr", "deepseek"])):
+async def agent_chat(req: ChatRequest, model: str = Query("zephyr", enum=["zephyr", "qwen"])):
     try:
         # Retrieve context (RAG)
         docs = retriever.get_relevant_documents(req.message)
@@ -66,9 +66,8 @@ async def agent_chat(req: ChatRequest, model: str = Query("zephyr", enum=["zephy
             "Content-Type": "application/json"
         }
         # Choose model
-        if model == "deepseek":
-            # Use huggingface_hub InferenceClient for DeepSeek
-            response_text = deepseek_chat(messages)
+        if model == "qwen":
+            response_text = qwen_chat(messages)
             return {"response": response_text}
         else:
             model_name = HF_MODEL

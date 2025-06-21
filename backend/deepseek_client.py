@@ -1,21 +1,19 @@
 import os
-from huggingface_hub import InferenceClient
+import requests
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN") or os.getenv("HF_TOKEN")
-HF_MODEL_DEEPSEEK = os.getenv("HF_MODEL_DEEPSEEK", "deepseek-ai/DeepSeek-R1")
+API_URL = "https://router.huggingface.co/hf-inference/models/Qwen/Qwen3-235B-A22B/v1/chat/completions"
+HF_TOKEN = os.getenv('HF_TOKEN')
+if not HF_TOKEN:
+    raise RuntimeError("HF_TOKEN environment variable is not set. Please set it to your Hugging Face API token.")
+headers = {
+    "Authorization": f"Bearer {HF_TOKEN}",
+}
 
-client = InferenceClient(
-    provider="auto",
-    api_key=HF_API_TOKEN,
-)
-
-def deepseek_chat(messages):
-    """
-    messages: list of dicts, each with 'role' and 'content'
-    Returns: response string from DeepSeek LLM
-    """
-    completion = client.chat.completions.create(
-        model=HF_MODEL_DEEPSEEK,
-        messages=messages,
-    )
-    return completion.choices[0].message.content
+def qwen_chat(messages):
+    payload = {
+        "messages": messages,
+        "model": "Qwen/Qwen3-235B-A22B"
+    }
+    response = requests.post(API_URL, headers=headers, json=payload)
+    result = response.json()
+    return result["choices"][0]["message"]["content"]
