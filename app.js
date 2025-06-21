@@ -1,54 +1,4 @@
 // Productivity Agent JS
-// Task Manager
-const taskForm = document.getElementById('taskForm');
-const taskInput = document.getElementById('taskInput');
-const taskList = document.getElementById('taskList');
-
-function loadTasks() {
-    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-    taskList.innerHTML = '';
-    tasks.forEach((task, idx) => {
-        const li = document.createElement('li');
-        li.textContent = task;
-        const btn = document.createElement('button');
-        btn.textContent = 'Remove';
-        btn.className = 'remove-task';
-        btn.onclick = () => removeTask(idx);
-        li.appendChild(btn);
-        taskList.appendChild(li);
-    });
-}
-function addTask(task) {
-    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-    tasks.push(task);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    loadTasks();
-}
-function removeTask(idx) {
-    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-    tasks.splice(idx, 1);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    loadTasks();
-}
-taskForm.addEventListener('submit', e => {
-    e.preventDefault();
-    if (taskInput.value.trim()) {
-        addTask(taskInput.value.trim());
-        taskInput.value = '';
-    }
-});
-loadTasks();
-
-// Notes
-const notesArea = document.getElementById('notesArea');
-const saveNotes = document.getElementById('saveNotes');
-notesArea.value = localStorage.getItem('notes') || '';
-saveNotes.onclick = () => {
-    localStorage.setItem('notes', notesArea.value);
-    saveNotes.textContent = 'Saved!';
-    setTimeout(() => saveNotes.textContent = 'Save Notes', 1200);
-};
-
 // AI Productivity Chat (Agentic, async)
 const chatBox = document.getElementById('chatBox');
 const userInput = document.getElementById('userInput');
@@ -87,6 +37,72 @@ function getBackendUrl() {
     return `${base}?model=${getSelectedModel()}`;
 }
 
+function formatLLMResponse(text) {
+    // Handle code blocks (triple backticks)
+    text = text.replace(/```([\s\S]*?)```/g, function(_, code) {
+        return `<pre class="llm-code"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+    });
+    // Inline code (single backtick)
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Blockquotes
+    text = text.replace(/^>\s?(.*)$/gm, '<blockquote>$1</blockquote>');
+
+    // Headings (must be at start of line)
+    text = text.replace(/^### (.*)$/gm, '<h3>$1</h3>')
+               .replace(/^## (.*)$/gm, '<h2>$1</h2>')
+               .replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+    // Horizontal rules
+    text = text.replace(/^---$/gm, '<hr>');
+
+    // Bold/italic
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+               .replace(/\*([^*]+)\*/g, '<i>$1</i>');
+
+    // Tables (parse markdown tables)
+    text = text.replace(/\n\|(.+)\|\n\|([\-\s\|]+)\|([\s\S]*?)(?=\n\n|$)/g, function(_, header, sep, body) {
+        const headers = header.split('|').map(h => `<th>${h.trim()}</th>`).join('');
+        const rows = body.trim().split('\n').filter(Boolean).map(row => {
+            const cells = row.split('|').map(c => `<td>${c.trim()}</td>`).join('');
+            return `<tr>${cells}</tr>`;
+        }).join('');
+        return `<table class="llm-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+    });
+
+    // Lists (ordered and unordered)
+    // Unordered lists
+    text = text.replace(/(?:^|\n)(\s*)- (.+)/g, function(match, spaces, item) {
+        return `\n<li>${item}</li>`;
+    });
+    // Ordered lists
+    text = text.replace(/(?:^|\n)(\s*)\d+\. (.+)/g, function(match, spaces, item) {
+        return `\n<li>${item}</li>`;
+    });
+    // Wrap consecutive <li> in <ul> or <ol>
+    text = text.replace(/(<li>.*?<\/li>)+/gs, function(list) {
+        // If the first <li> was from an ordered list, use <ol>
+        return `<ul>${list}</ul>`;
+    });
+
+    // Paragraphs: wrap lines that are not block elements in <p>
+    text = text.replace(/(^|\n)(?!<h\d|<ul>|<ol>|<li>|<table|<blockquote>|<pre|<hr|<p>|<\/)([^\n<][^\n]*)/g, function(_, br, line) {
+        if (line.trim() === '') return '';
+        return `<p>${line.trim()}</p>`;
+    });
+
+    // Remove <p> inside block elements
+    text = text.replace(/(<(ul|ol|table|pre|blockquote)[^>]*>)([\s\S]*?)(<\/(ul|ol|table|pre|blockquote)>)/g, function(_, open, tag, inner, close) {
+        return open + inner.replace(/<p>([\s\S]*?)<\/p>/g, '$1') + close;
+    });
+
+    // Remove excessive <br> (keep only those not inside block elements)
+    text = text.replace(/(<\/?(ul|ol|li|table|thead|tbody|tr|th|td|pre|blockquote|h\d|hr)[^>]*>)<br>/g, '$1');
+    text = text.replace(/<br>(<\/?(ul|ol|li|table|thead|tbody|tr|th|td|pre|blockquote|h\d|hr)[^>]*>)/g, '$1');
+
+    return text;
+}
+
 async function sendToAgent(message) {
     appendMessage('You', message);
     // Insert a placeholder for GenAI response and keep a reference
@@ -103,13 +119,17 @@ async function sendToAgent(message) {
         if (!res.ok) throw new Error('Agent error');
         const data = await res.json();
         let response = data.response;
-        // If response contains <think>...</think>, extract and show in subtextbox
+        // If response contains <think>...</think>, extract and show in subtextbox above main response
         const thinkMatch = response.match(/<think>([\s\S]*?)<\/think>/i);
         if (thinkMatch) {
-            appendSubMessage(thinkMatch[1].trim());
+            const subDiv = document.createElement('div');
+            subDiv.className = 'sub-message-box think-box';
+            subDiv.innerHTML = `<span><b>GenAI is thinking:</b> ${formatLLMResponse(thinkMatch[1].trim())}</span><button class="close-sub-msg" title="Close">&times;</button>`;
+            subDiv.querySelector('.close-sub-msg').onclick = () => subDiv.remove();
+            chatBox.insertBefore(subDiv, aiMsgDiv); // Insert above main response
             response = response.replace(/<think>[\s\S]*?<\/think>/i, '').trim();
         }
-        aiMsgDiv.innerHTML = `<strong>GenAI:</strong> ${response}`;
+        aiMsgDiv.innerHTML = `<strong>GenAI:</strong> ${formatLLMResponse(response)}`;
         chatHistory.push({ user: message, ai: data.response });
     } catch (err) {
         aiMsgDiv.innerHTML = `<strong>GenAI:</strong> <span style='color:red'>Error: ${err.message}</span>`;

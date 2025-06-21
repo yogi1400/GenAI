@@ -1,0 +1,27 @@
+# Ignore Python cache and environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+
+# VSCode
+.vscode/
+
+# Node
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Ignore ChromaDB and other local DBs
+db/
+chroma/
+
+# Ignore logs
+*.log
+
+# Ignore Jupyter checkpoints
+.ipynb_checkpoints/
