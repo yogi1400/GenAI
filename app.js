@@ -117,20 +117,28 @@ async function sendToAgent(message) {
             body: JSON.stringify({ message, history: chatHistory })
         });
         if (!res.ok) throw new Error('Agent error');
-        const data = await res.json();
-        let response = data.response;
-        // If response contains <think>...</think>, extract and show in subtextbox above main response
-        const thinkMatch = response.match(/<think>([\s\S]*?)<\/think>/i);
-        if (thinkMatch) {
-            const subDiv = document.createElement('div');
-            subDiv.className = 'sub-message-box think-box';
-            subDiv.innerHTML = `<span><b>GenAI is thinking:</b> ${formatLLMResponse(thinkMatch[1].trim())}</span><button class="close-sub-msg" title="Close">&times;</button>`;
-            subDiv.querySelector('.close-sub-msg').onclick = () => subDiv.remove();
-            chatBox.insertBefore(subDiv, aiMsgDiv); // Insert above main response
-            response = response.replace(/<think>[\s\S]*?<\/think>/i, '').trim();
+        // Stream response
+        if (res.body && window.ReadableStream) {
+            let response = '';
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                if (value) {
+                    const chunk = decoder.decode(value);
+                    response += chunk;
+                    aiMsgDiv.innerHTML = `<strong>GenAI:</strong> ${formatLLMResponse(response)}`;
+                }
+            }
+            chatHistory.push({ user: message, ai: response });
+        } else {
+            // fallback for non-streaming
+            const data = await res.text();
+            aiMsgDiv.innerHTML = `<strong>GenAI:</strong> ${formatLLMResponse(data)}`;
+            chatHistory.push({ user: message, ai: data });
         }
-        aiMsgDiv.innerHTML = `<strong>GenAI:</strong> ${formatLLMResponse(response)}`;
-        chatHistory.push({ user: message, ai: data.response });
     } catch (err) {
         aiMsgDiv.innerHTML = `<strong>GenAI:</strong> <span style='color:red'>Error: ${err.message}</span>`;
     }

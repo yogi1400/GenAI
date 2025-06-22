@@ -8,3 +8,5 @@ pydantic
 python-dotenv
 httpx
 pytest
+langgraph
+faiss-cpu
