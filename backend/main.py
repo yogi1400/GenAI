@@ -12,6 +12,7 @@ from langgraph_orchestrator import run_workflow
 from fastapi.responses import StreamingResponse
 import json
 import time
+from backend import presentation_creator
 
 load_dotenv()
 
@@ -29,6 +30,7 @@ OPENROUTER_SITE_NAME = os.getenv("OPENROUTER_SITE_NAME", "GenAI App")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 app = FastAPI()
+app.include_router(presentation_creator.router)
 
 app.add_middleware(
     CORSMiddleware,

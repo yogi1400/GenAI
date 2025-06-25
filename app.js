@@ -159,3 +159,203 @@ const toggleTheme = document.getElementById('toggleTheme');
 toggleTheme.addEventListener('click', function() {
     document.body.classList.toggle('dark');
 });
+
+// --- AI Presentation Creator Multi-Step UI ---
+const presentationWizard = document.createElement('div');
+presentationWizard.id = 'presentationWizard';
+presentationWizard.innerHTML = `
+  <div class="wizard-step" id="wizStep1">
+    <h2>Step 1: Presentation Topic & Structure</h2>
+    <label>Presentation Title:<br><input type="text" id="wizTitle" required></label><br>
+    <label>Subtitle:<br><input type="text" id="wizSubtitle"></label><br>
+    <label>Sections & Slides:<br>
+      <textarea id="wizSections" rows="5" placeholder="Section: Introduction\n- Bullet: What is AI?\n- Image: AI in daily life\nSection: Trends\n- Chart: AI Adoption by Industry\n..."></textarea>
+    </label><br>
+    <button id="wizNext1">Next</button>
+  </div>
+  <div class="wizard-step" id="wizStep2" style="display:none">
+    <h2>Step 2: Design & Branding</h2>
+    <label>Font:<br><select id="wizFont">
+      <option value="Calibri">Calibri</option>
+      <option value="Arial">Arial</option>
+      <option value="Helvetica">Helvetica</option>
+      <option value="Times New Roman">Times New Roman</option>
+    </select></label><br>
+    <label>Text Color:<br><input type="color" id="wizTextColor" value="#1e1e1e"></label><br>
+    <label>Accent Color:<br><input type="color" id="wizAccentColor" value="#4f8cff"></label><br>
+    <label>Logo (URL, optional):<br><input type="text" id="wizLogo"></label><br>
+    <button id="wizPrev2">Back</button>
+    <button id="wizNext2">Next</button>
+  </div>
+  <div class="wizard-step" id="wizStep3" style="display:none">
+    <h2>Step 3: Preview & Generate</h2>
+    <div id="wizPreview"></div>
+    <button id="wizPrev3">Back</button>
+    <button id="wizGenerate">Generate Presentation</button>
+    <div id="wizStatus"></div>
+  </div>
+`;
+document.body.appendChild(presentationWizard);
+
+// Wizard navigation logic
+const wizSteps = [
+  document.getElementById('wizStep1'),
+  document.getElementById('wizStep2'),
+  document.getElementById('wizStep3')
+];
+function showStep(idx) {
+  wizSteps.forEach((step, i) => step.style.display = i === idx ? '' : 'none');
+}
+document.getElementById('wizNext1').onclick = () => {
+  showStep(1);
+};
+document.getElementById('wizPrev2').onclick = () => {
+  showStep(0);
+};
+document.getElementById('wizNext2').onclick = () => {
+  // Build preview
+  const title = document.getElementById('wizTitle').value.trim();
+  const subtitle = document.getElementById('wizSubtitle').value.trim();
+  const sectionsRaw = document.getElementById('wizSections').value.trim();
+  const previewDiv = document.getElementById('wizPreview');
+  let previewHtml = `<h3>${title}</h3><p>${subtitle}</p><ol>`;
+  const lines = sectionsRaw.split('\n');
+  let currentSection = '';
+  lines.forEach(line => {
+    if (/^Section:/i.test(line)) {
+      currentSection = line.replace(/^Section:/i, '').trim();
+      previewHtml += `<li><b>Section:</b> ${currentSection}<ul>`;
+    } else if (/^-\s*(Bullet|Image|Chart):/i.test(line)) {
+      const [, type] = line.match(/^-\s*(Bullet|Image|Chart):/i) || [];
+      const content = line.replace(/^-\s*(Bullet|Image|Chart):/i, '').trim();
+      previewHtml += `<li><b>${type}:</b> ${content}</li>`;
+    } else if (line.trim() === '') {
+      previewHtml += '</ul></li>';
+    }
+  });
+  previewHtml += '</ol>';
+  previewDiv.innerHTML = previewHtml;
+  showStep(2);
+};
+document.getElementById('wizPrev3').onclick = () => {
+  showStep(1);
+};
+
+document.getElementById('wizGenerate').onclick = async () => {
+  const title = document.getElementById('wizTitle').value.trim();
+  const subtitle = document.getElementById('wizSubtitle').value.trim();
+  const font = document.getElementById('wizFont').value;
+  const textColor = document.getElementById('wizTextColor').value;
+  const accentColor = document.getElementById('wizAccentColor').value;
+  const logo = document.getElementById('wizLogo').value.trim();
+  const sectionsRaw = document.getElementById('wizSections').value.trim();
+  // Parse structure
+  const lines = sectionsRaw.split('\n');
+  let sections = [], currentSection = null;
+  lines.forEach(line => {
+    if (/^Section:/i.test(line)) {
+      if (currentSection) sections.push(currentSection);
+      currentSection = { title: line.replace(/^Section:/i, '').trim(), slides: [] };
+    } else if (/^-\s*(Bullet|Image|Chart):/i.test(line)) {
+      const [, type] = line.match(/^-\s*(Bullet|Image|Chart):/i) || [];
+      const content = line.replace(/^-\s*(Bullet|Image|Chart):/i, '').trim();
+      if (currentSection) currentSection.slides.push({ type: type.toLowerCase(), title: content });
+    }
+  });
+  if (currentSection) sections.push(currentSection);
+  // Color parsing
+  function hexToRgb(hex) {
+    const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    return m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)] : [30,30,30];
+  }
+  const color_scheme = {
+    text: hexToRgb(textColor),
+    accent: hexToRgb(accentColor)
+  };
+  const structure = {
+    title,
+    subtitle,
+    sections,
+    final_slide: { title: 'Thank You!', content: 'Questions & Discussion' }
+  };
+  const payload = {
+    topic: title,
+    structure,
+    font,
+    color_scheme,
+    branding: logo ? { logo_url: logo } : undefined
+  };
+  const statusDiv = document.getElementById('wizStatus');
+  statusDiv.textContent = 'Generating presentation...';
+  try {
+    const res = await fetch('/api/presentation/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Failed to generate presentation');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    statusDiv.innerHTML = `<a href="${url}" download="${title.replace(/\s+/g, '_')}.pptx">Download Presentation</a>`;
+  } catch (err) {
+    statusDiv.textContent = 'Error: ' + err.message;
+  }
+};
+
+// --- One-Click AI Presentation Creator ---
+const autoForm = document.createElement('form');
+autoForm.id = 'autoPresentationForm';
+autoForm.innerHTML = `
+  <h2>One-Click AI Presentation</h2>
+  <label>Topic:<br><input type="text" id="autoTopic" required placeholder="e.g. The Future of Robotics"></label><br>
+  <label>Font:<br><select id="autoFont">
+    <option value="Calibri">Calibri</option>
+    <option value="Arial">Arial</option>
+    <option value="Helvetica">Helvetica</option>
+    <option value="Times New Roman">Times New Roman</option>
+  </select></label><br>
+  <label>Text Color:<br><input type="color" id="autoTextColor" value="#1e1e1e"></label><br>
+  <label>Accent Color:<br><input type="color" id="autoAccentColor" value="#4f8cff"></label><br>
+  <label>Logo (URL, optional):<br><input type="text" id="autoLogo"></label><br>
+  <button type="submit">Generate Presentation</button>
+  <div id="autoStatus"></div>
+`;
+document.body.appendChild(autoForm);
+
+autoForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const topic = document.getElementById('autoTopic').value.trim();
+  const font = document.getElementById('autoFont').value;
+  const textColor = document.getElementById('autoTextColor').value;
+  const accentColor = document.getElementById('autoAccentColor').value;
+  const logo = document.getElementById('autoLogo').value.trim();
+  function hexToRgb(hex) {
+    const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    return m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)] : [30,30,30];
+  }
+  const color_scheme = {
+    text: hexToRgb(textColor),
+    accent: hexToRgb(accentColor)
+  };
+  const payload = {
+    topic,
+    font,
+    color_scheme,
+    branding: logo ? { logo_url: logo } : undefined
+  };
+  const statusDiv = document.getElementById('autoStatus');
+  statusDiv.textContent = 'Generating presentation...';
+  try {
+    const res = await fetch('https://glorious-meme-jjg97qj9qpvqcppww-8000.app.github.dev/api/presentation/auto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Failed to generate presentation');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    statusDiv.innerHTML = `<a href="${url}" download="${topic.replace(/\s+/g, '_')}.pptx">Download Presentation</a>`;
+  } catch (err) {
+    statusDiv.textContent = 'Error: ' + err.message;
+  }
+});

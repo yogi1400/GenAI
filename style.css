@@ -185,6 +185,198 @@ footer.footer {
     color: #1a3a5d;
     font-weight: 600;
 }
+#presentationForm {
+    max-width: 520px;
+    margin: 32px auto 0 auto;
+    background: #f7faff;
+    border-radius: 10px;
+    box-shadow: 0 1px 8px rgba(79,140,255,0.08);
+    padding: 28px 32px 18px 32px;
+    font-size: 1.08rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+#presentationForm h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #4f8cff;
+    text-align: center;
+}
+#presentationForm label {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #2d3a4b;
+}
+#presentationForm input[type="text"],
+#presentationForm textarea,
+#presentationForm select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #b0b8c1;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+#presentationForm input[type="color"] {
+    width: 48px;
+    height: 32px;
+    border: none;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+#presentationForm button[type="submit"] {
+    background: #4f8cff;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 1.08rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+#presentationForm button[type="submit"]:hover {
+    background: #2563eb;
+}
+#pptStatus {
+    margin-top: 12px;
+    font-size: 1.05em;
+    color: #2563eb;
+    text-align: center;
+}
+#wizardStep1, #wizardStep2, #wizardStep3, #presentationWizard {
+    max-width: 600px;
+    margin: 32px auto 0 auto;
+    background: #f7faff;
+    border-radius: 10px;
+    box-shadow: 0 1px 8px rgba(79,140,255,0.08);
+    padding: 28px 32px 18px 32px;
+    font-size: 1.08rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+#wizardStep1 h2, #wizardStep2 h2, #wizardStep3 h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #4f8cff;
+    text-align: center;
+}
+#wizardStep1 label, #wizardStep2 label, #wizardStep3 label {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #2d3a4b;
+}
+#wizardStep1 input[type="text"],
+#wizardStep2 input[type="text"],
+#wizardStep1 textarea,
+#wizardStep2 textarea,
+#wizardStep2 select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #b0b8c1;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+#wizardStep2 input[type="color"] {
+    width: 48px;
+    height: 32px;
+    border: none;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+#wizardStep1 button, #wizardStep2 button, #wizardStep3 button {
+    background: #4f8cff;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 1.08rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+#wizardStep1 button:hover, #wizardStep2 button:hover, #wizardStep3 button:hover {
+    background: #2563eb;
+}
+#wizPreview {
+    background: #f0f4fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    font-size: 1.05em;
+    color: #2d3a4b;
+}
+#wizStatus {
+    margin-top: 12px;
+    font-size: 1.05em;
+    color: #2563eb;
+    text-align: center;
+}
+#autoPresentationForm {
+    max-width: 520px;
+    margin: 32px auto 0 auto;
+    background: #f7faff;
+    border-radius: 10px;
+    box-shadow: 0 1px 8px rgba(79,140,255,0.08);
+    padding: 28px 32px 18px 32px;
+    font-size: 1.08rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+#autoPresentationForm h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #4f8cff;
+    text-align: center;
+}
+#autoPresentationForm label {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #2d3a4b;
+}
+#autoPresentationForm input[type="text"],
+#autoPresentationForm select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #b0b8c1;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+#autoPresentationForm input[type="color"] {
+    width: 48px;
+    height: 32px;
+    border: none;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+#autoPresentationForm button[type="submit"] {
+    background: #4f8cff;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 1.08rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+#autoPresentationForm button[type="submit"]:hover {
+    background: #2563eb;
+}
+#autoStatus {
+    margin-top: 12px;
+    font-size: 1.05em;
+    color: #2563eb;
+    text-align: center;
+}
 body.dark .container.chat-only {
     background: #23272f;
 }
@@ -230,6 +422,83 @@ body.dark .llm-table th {
 }
 body.dark .llm-table td {
     border-color: #444a57;
+}
+body.dark #presentationForm {
+    background: #23272f;
+    color: #e0e0e0;
+    box-shadow: 0 1px 8px rgba(79,140,255,0.18);
+}
+body.dark #presentationForm h2 {
+    color: #90caf9;
+}
+body.dark #presentationForm label {
+    color: #e0e0e0;
+}
+body.dark #presentationForm input[type="text"],
+body.dark #presentationForm textarea,
+body.dark #presentationForm select {
+    background: #23272f;
+    color: #e0e0e0;
+    border: 1px solid #444a57;
+}
+body.dark #presentationForm button[type="submit"] {
+    background: #2563eb;
+}
+body.dark #pptStatus {
+    color: #90caf9;
+}
+body.dark #presentationWizard, body.dark #wizardStep1, body.dark #wizardStep2, body.dark #wizardStep3 {
+    background: #23272f;
+    color: #e0e0e0;
+    box-shadow: 0 1px 8px rgba(79,140,255,0.18);
+}
+body.dark #wizardStep1 h2, body.dark #wizardStep2 h2, body.dark #wizardStep3 h2 {
+    color: #90caf9;
+}
+body.dark #wizardStep1 label, body.dark #wizardStep2 label, body.dark #wizardStep3 label {
+    color: #e0e0e0;
+}
+body.dark #wizardStep1 input[type="text"],
+body.dark #wizardStep2 input[type="text"],
+body.dark #wizardStep1 textarea,
+body.dark #wizardStep2 textarea,
+body.dark #wizardStep2 select {
+    background: #23272f;
+    color: #e0e0e0;
+    border: 1px solid #444a57;
+}
+body.dark #wizardStep1 button, body.dark #wizardStep2 button, body.dark #wizardStep3 button {
+    background: #2563eb;
+}
+body.dark #wizPreview {
+    background: #181a1b;
+    color: #b0b8c1;
+}
+body.dark #wizStatus {
+    color: #90caf9;
+}
+body.dark #autoPresentationForm {
+    background: #23272f;
+    color: #e0e0e0;
+    box-shadow: 0 1px 8px rgba(79,140,255,0.18);
+}
+body.dark #autoPresentationForm h2 {
+    color: #90caf9;
+}
+body.dark #autoPresentationForm label {
+    color: #e0e0e0;
+}
+body.dark #autoPresentationForm input[type="text"],
+body.dark #autoPresentationForm select {
+    background: #23272f;
+    color: #e0e0e0;
+    border: 1px solid #444a57;
+}
+body.dark #autoPresentationForm button[type="submit"] {
+    background: #2563eb;
+}
+body.dark #autoStatus {
+    color: #90caf9;
 }
 @media (max-width: 900px) {
     .main-chat-area {
